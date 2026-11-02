@@ -221,7 +221,7 @@ ol.crits{list-style:none; margin:0; padding:0}
       <div class="card" id="crit-view">
         <div class="crit-head">
           <div>
-            <h2 data-i18n="criteria"></h2>
+            <h2 id="crit-title"></h2>
             <p class="legend" id="legend"></p>
           </div>
           <button type="button" class="btn small" id="btn-edit" hidden data-i18n="edit"></button>
@@ -235,6 +235,7 @@ ol.crits{list-style:none; margin:0; padding:0}
             <h2 data-i18n="edTitle"></h2>
             <p class="legend" data-i18n="edHint"></p>
             <p class="note" data-i18n="edLocal"></p>
+            <p class="note" id="ed-class" style="font-weight:700"></p>
           </div>
           <div class="field" style="min-width:200px">
             <label for="ed-scale" data-i18n="edScale"></label>
@@ -309,7 +310,7 @@ var DEF_ITEMS=[
  {ru:'Я уложился(лась) во время и довёл(а) работу до конца',kk:'Уақытқа үлгеріп, жұмысты соңына дейін жеткіздім',en:'I managed my time and finished the work'},
  {ru:'Я могу назвать, что получилось хорошо и что нужно улучшить',kk:'Нені жақсы орындағанымды және нені жақсарту керегін айта аламын',en:'I can say what went well and what I should improve'}
 ];
-var DEFAULT={scale:1,items:DEF_ITEMS};
+var DEFAULT={scale:1,topic:{ru:'',kk:'',en:''},items:DEF_ITEMS};
 
 var I18N={
 ru:{
@@ -330,7 +331,7 @@ ru:{
  del:'Удалить',delSure:'Удалить запись?',delYes:'Да, удалить',delNo:'Отмена',
  delNote:'Удаление убирает запись только с этого устройства. В таблице учителя она остаётся.',
  sentTag:'отправлено',unsentTag:'не отправлено',resend:'Отправить снова',resendOk:'Отправлено.',resendFail:'Не удалось отправить. Проверьте интернет.',
- edTitle:'Редактор критериев',edHint:'Измените формулировки на трёх языках. Если перевод пустой, будет показан русский текст. Сумма баллов всегда приводится к 10.',
+ edTitle:'Редактор критериев',edTopic:'Тема урока',edFor:'Класс {c}',edHint:'Измените формулировки на трёх языках. Если перевод пустой, будет показан русский текст. Сумма баллов всегда приводится к 10.',
  edLocal:'Изменения сохранятся только на этом устройстве.',
  edScale:'Максимум баллов за критерий',edN:'Критерий {n}',edSave:'Сохранить критерии',edCancel:'Отмена',edRestore:'Вернуть стандартные',
  edSaved:'Критерии сохранены.',
@@ -355,7 +356,7 @@ kk:{
  del:'Жою',delSure:'Жазбаны жою керек пе?',delYes:'Иә, жою',delNo:'Бас тарту',
  delNote:'Жою жазбаны тек осы құрылғыдан өшіреді. Мұғалімнің кестесіндегі жазба қалады.',
  sentTag:'жіберілді',unsentTag:'жіберілмеді',resend:'Қайта жіберу',resendOk:'Жіберілді.',resendFail:'Жіберу мүмкін болмады. Интернетті тексеріңіз.',
- edTitle:'Өлшемшарттар редакторы',edHint:'Өлшемшарттарды үш тілде өзгертіңіз. Аударма бос болса, орысша мәтін көрсетіледі. Балл жиыны әрқашан 10-ға келтіріледі.',
+ edTitle:'Өлшемшарттар редакторы',edTopic:'Сабақ тақырыбы',edFor:'{c} сыныбы',edHint:'Өлшемшарттарды үш тілде өзгертіңіз. Аударма бос болса, орысша мәтін көрсетіледі. Балл жиыны әрқашан 10-ға келтіріледі.',
  edLocal:'Өзгерістер тек осы құрылғыда сақталады.',
  edScale:'Әр өлшемшарттың ең жоғары балы',edN:'{n}-өлшемшарт',edSave:'Өлшемшарттарды сақтау',edCancel:'Бас тарту',edRestore:'Бастапқы нұсқаға қайтару',
  edSaved:'Өлшемшарттар сақталды.',
@@ -380,7 +381,7 @@ en:{
  del:'Delete',delSure:'Delete this entry?',delYes:'Yes, delete',delNo:'Cancel',
  delNote:'Deleting removes the entry from this device only. It stays in the teacher’s spreadsheet.',
  sentTag:'sent',unsentTag:'not sent',resend:'Send again',resendOk:'Sent.',resendFail:'Could not send. Check your internet connection.',
- edTitle:'Criteria editor',edHint:'Edit the wording in three languages. If a translation is empty, the Russian text is shown. The total is always scaled to 10 points.',
+ edTitle:'Criteria editor',edTopic:'Lesson topic',edFor:'Class {c}',edHint:'Edit the wording in three languages. If a translation is empty, the Russian text is shown. The total is always scaled to 10 points.',
  edLocal:'Changes are saved on this device only.',
  edScale:'Maximum points per criterion',edN:'Criterion {n}',edSave:'Save criteria',edCancel:'Cancel',edRestore:'Restore defaults',
  edSaved:'Criteria saved.',
@@ -412,16 +413,32 @@ function fmtDate(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?m[3]+
 function uid8(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
 
 var lang=LS.get('sa.lang','ru'); if(!I18N[lang])lang='ru';
+var CLASSES=[];GRADES.forEach(function(g){LETTERS.forEach(function(l){CLASSES.push(g+l)})});
 function normalize(c){
   if(!c||typeof c!=='object'||!Array.isArray(c.items))return null;
   var scale=Number(c.scale); if(!(scale>=1&&scale<=5))scale=1; scale=Math.round(scale);
+  var tp=c.topic||{};
   var items=[];
   for(var i=0;i<N;i++){var it=c.items[i]||{},d=DEF_ITEMS[i];
     items.push({ru:String(it.ru!=null?it.ru:d.ru),kk:String(it.kk!=null?it.kk:d.kk),en:String(it.en!=null?it.en:d.en)});}
-  return {scale:scale,items:items};
+  return {scale:scale,topic:{ru:String(tp.ru||''),kk:String(tp.kk||''),en:String(tp.en||'')},items:items};
 }
-/* критерии: кэш таблицы учителя > правки на этом устройстве > стандартные */
-var criteria=normalize(LS.get(SCRIPT_URL?'sa.criteria.remote':'sa.criteria',null))||clone(DEFAULT);
+/* критерии и тема у каждого класса свои: таблица учителя (кэш) или правки на этом устройстве */
+var STORE=SCRIPT_URL?'sa.classes.remote':'sa.classes.local';
+var crit=LS.get(STORE,{}); if(!crit||typeof crit!=='object')crit={};
+function cfg(key){return normalize(crit[key])||normalize(DEFAULT)}
+function curKey(){return form.grade+form.letter}
+function cur(){return cfg(curKey())}
+var lastAuto='';
+function topicText(){var tp=cur().topic;return tp[lang]||tp.ru||''}
+function autoSubject(){
+  var inp=$('#f-subject'),want=topicText();
+  if(!inp.value.trim()||inp.value===lastAuto){inp.value=want;lastAuto=want}
+}
+function onClassChange(){
+  form.scores=form.scores.map(function(){return null});
+  renderCriteria();updateSummary();autoSubject();
+}
 var form={grade:7,letter:LETTERS[0],date:todayStr(),scores:[]};
 for(var q=0;q<N;q++)form.scores.push(null);
 var localEntries=LS.get('sa.journal',[]); if(!Array.isArray(localEntries))localEntries=[];
@@ -444,7 +461,7 @@ function applyLang(){
   $$('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'))});
   $$('[data-i18n-ph]').forEach(function(el){el.setAttribute('placeholder',t(el.getAttribute('data-i18n-ph')))});
   $$('#langs button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-lang')===lang))});
-  renderClassPickers();renderCriteria();updateSummary();renderJournal();renderMode();
+  renderClassPickers();renderCriteria();updateSummary();autoSubject();renderJournal();renderMode();
   $('#btn-edit').hidden=!!SCRIPT_URL||editing;
   $('#del-note').hidden=!SCRIPT_URL;
   if(editing)renderEditor();
@@ -462,15 +479,17 @@ function radioGroup(name,values,current,onPick){
 }
 function renderClassPickers(){
   var g=$('#grade-rs'),l=$('#letter-rs');g.textContent='';l.textContent='';
-  g.append(radioGroup('grade',GRADES,form.grade,function(v){form.grade=v}));
-  l.append(radioGroup('letter',LETTERS,form.letter,function(v){form.letter=v}));
+  g.append(radioGroup('grade',GRADES,form.grade,function(v){form.grade=v;onClassChange()}));
+  l.append(radioGroup('letter',LETTERS,form.letter,function(v){form.letter=v;onClassChange()}));
 }
 
 function renderCriteria(){
   var ol=$('#crits');ol.textContent='';
-  criteria.items.forEach(function(item,i){
+  var cc=cur();
+  $('#crit-title').textContent=t('criteria')+' · '+curKey();
+  cc.items.forEach(function(item,i){
     var rs=h('div',{class:'rs',role:'radiogroup','aria-labelledby':'ct'+i});
-    for(var v=0;v<=criteria.scale;v++){
+    for(var v=0;v<=cc.scale;v++){
       var inp=h('input',{type:'radio',name:'c'+i,value:String(v),'data-i':String(i)});
       if(form.scores[i]===v)inp.checked=true;
       rs.append(h('label',null,inp,h('span',{text:String(v)})));
@@ -479,7 +498,7 @@ function renderCriteria(){
       h('span',{class:'n',text:String(i+1)}),
       h('p',{class:'ct',id:'ct'+i,text:critText(item)}),rs));
   });
-  $('#legend').textContent=t('legend',{max:criteria.scale});
+  $('#legend').textContent=t('legend',{max:cc.scale});
 }
 $('#crits').addEventListener('change',function(e){
   var el=e.target;if(!el||el.type!=='radio')return;
@@ -490,7 +509,7 @@ $('#crits').addEventListener('change',function(e){
 
 function levelOf(p){return p>=85?'High':p>=65?'Mid':p>=40?'Base':'Low'}
 function calc(){
-  var max=criteria.scale,done=0,raw=0;
+  var max=cur().scale,done=0,raw=0;
   form.scores.forEach(function(s){if(s!==null){done++;raw+=s}});
   return {max:max,done:done,raw:raw,total10:Math.round(raw/(max*N)*100)/10,pct:Math.round(raw/(max*N)*100)};
 }
@@ -526,10 +545,11 @@ function retryUnsent(){
 function loadRemoteCriteria(){
   if(!SCRIPT_URL)return;
   fetch(SCRIPT_URL).then(function(r){return r.json()}).then(function(j){
-    var c=j&&j.ok&&normalize(j.criteria);if(!c)return;
-    criteria=c;LS.set('sa.criteria.remote',c);
-    form.scores=form.scores.map(function(s){return s!==null&&s>c.scale?null:s});
-    renderCriteria();updateSummary();renderJournal();
+    if(!j||!j.ok||!j.classes)return;
+    var map={};CLASSES.forEach(function(k){var c=normalize(j.classes[k]);if(c)map[k]=c});
+    crit=map;LS.set(STORE,crit);
+    form.scores=form.scores.map(function(s){return s!==null&&s>cur().scale?null:s});
+    renderCriteria();updateSummary();autoSubject();renderJournal();
   }).catch(function(){});
 }
 
@@ -564,7 +584,7 @@ $('#f-date').addEventListener('change',function(e){form.date=e.target.value||tod
 
 /* ---------- журнал ---------- */
 function ck(e){return String(e.grade)+e.letter}
-function s10(e){var m=e.max||criteria.scale,sum=0;(e.scores||[]).forEach(function(s){sum+=s||0});return Math.round(sum/(N*m)*100)/10}
+function s10(e){var m=e.max||cfg(ck(e)).scale,sum=0;(e.scores||[]).forEach(function(s){sum+=s||0});return Math.round(sum/(N*m)*100)/10}
 function sorted(){
   return localEntries.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||(b.ts||'').localeCompare(a.ts||'')});
 }
@@ -587,9 +607,10 @@ function renderJournal(){
   list.forEach(function(e){
     var open=!!openIds[e.id],lv=levelOf(e.pct||0),detail=null;
     if(open){
-      detail=h('div',{class:'detail'},h('ol',null,criteria.items.map(function(item,i){
+      var ec=cfg(ck(e));
+      detail=h('div',{class:'detail'},h('ol',null,ec.items.map(function(item,i){
         var s=e.scores&&e.scores[i];
-        return h('li',null,h('span',{class:'nn',text:String(i+1)}),h('span',{text:critText(item)}),h('b',{text:(s==null?'–':s)+' / '+(e.max||criteria.scale)}));
+        return h('li',null,h('span',{class:'nn',text:String(i+1)}),h('span',{text:critText(item)}),h('b',{text:(s==null?'–':s)+' / '+(e.max||ec.scale)}));
       })));
     }
     var tag=null,resend=null;
@@ -655,7 +676,7 @@ $('#btn-export').addEventListener('click',exportCsv);
 
 /* ---------- редактор критериев (только если таблица не подключена) ---------- */
 function openEditor(){
-  draft=clone(criteria);editing=true;
+  draft=cur();editing=true;
   $('#crit-view').hidden=true;$('#bar').hidden=true;$('#crit-editor').hidden=false;$('#btn-edit').hidden=true;
   $('#ed-scale').value=String(draft.scale);
   renderEditor();$('#crit-editor').scrollIntoView({block:'start'});
@@ -669,6 +690,15 @@ function renderEditor(){
   if(!draft)return;
   var box=$('#ed-items');box.textContent='';
   var labels={ru:'Русский',kk:'Қазақша',en:'English'};
+  $('#ed-class').textContent=t('edFor',{c:curKey()});
+  var tg=h('div',{class:'ed-lang'});
+  ['ru','kk','en'].forEach(function(l){
+    var id='ed-topic-'+l;
+    var inp=h('input',{type:'text',id:id,maxlength:'160'});inp.value=draft.topic[l];
+    inp.addEventListener('input',function(){draft.topic[l]=inp.value});
+    tg.append(h('div',{class:'field'},h('label',{for:id,text:labels[l]}),inp));
+  });
+  box.append(h('div',{class:'ed-row'},h('h3',{text:t('edTopic')}),tg));
   draft.items.forEach(function(it,i){
     var grid=h('div',{class:'ed-lang'});
     ['ru','kk','en'].forEach(function(l){
@@ -686,9 +716,9 @@ $('#ed-restore').addEventListener('click',function(){draft=clone(DEFAULT);$('#ed
 $('#ed-scale').addEventListener('change',function(e){if(draft)draft.scale=Number(e.target.value)});
 $('#ed-save').addEventListener('click',function(){
   var c=normalize(draft);if(!c)return;
-  criteria=c;LS.set('sa.criteria',c);
+  crit[curKey()]=c;LS.set(STORE,crit);
   form.scores=form.scores.map(function(s){return s!==null&&s>c.scale?null:s});
-  closeEditor();renderJournal();toast(t('edSaved'));
+  closeEditor();autoSubject();renderJournal();toast(t('edSaved'));
 });
 
 function renderMode(){
