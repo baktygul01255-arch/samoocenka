@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Лист самооценивания</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=Roboto+Mono:wght@500;600&family=Roboto+Slab:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow column styled as a squared school notebook; the red-pen total sits in a sticky bottom bar. */
+:root{
+  color-scheme:light;
+  --paper:#F5F7FB; --grid:#E2E8F2; --surface:#FFFFFF; --ink:#16213D; --muted:#58657F; --line:#CBD4E4;
+  --pen:#2347C5; --pen-ink:#FFFFFF; --pen-soft:#E8EDFB; --red:#C42D2A;
+  --good:#1E7A4B; --warn:#A8670F; --bad:#C42D2A; --shadow:rgba(22,33,61,.28);
+  --f-display:'Roboto Slab',Georgia,'Times New Roman',serif;
+  --f-body:'PT Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --f-num:'Roboto Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1730; --grid:#19243F; --surface:#172140; --ink:#E8EDFA; --muted:#A3B0CA; --line:#2C3B60;
+    --pen:#8EA4FF; --pen-ink:#0F1730; --pen-soft:#202D57; --red:#FF8F86;
+    --good:#62C795; --warn:#E5B35E; --bad:#FF8F86; --shadow:rgba(0,0,0,.6); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1730; --grid:#19243F; --surface:#172140; --ink:#E8EDFA; --muted:#A3B0CA; --line:#2C3B60;
+  --pen:#8EA4FF; --pen-ink:#0F1730; --pen-soft:#202D57; --red:#FF8F86;
+  --good:#62C795; --warn:#E5B35E; --bad:#FF8F86; --shadow:rgba(0,0,0,.6); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; padding-block:22px 0;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px; color:var(--ink); font:16px/1.5 var(--f-body);
+}
+.wrap{max-width:880px; margin-inline:auto; display:flex; flex-direction:column; gap:20px}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance}
+button,input,textarea,select{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--pen); outline-offset:2px}
+[hidden]{display:none!important}
+
+.top{display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; align-items:flex-start}
+.top>div:first-child{flex:1 1 320px; min-width:0}
+.eyebrow{margin:0 0 6px; font-size:.8125rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+h1{font-size:clamp(1.625rem,5vw,2.375rem); line-height:1.15; font-weight:700}
+.sub{margin:10px 0 0; max-width:62ch; color:var(--muted)}
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--surface)}
+.seg button{min-width:52px; min-height:42px; padding:0 12px; border:0; background:transparent; font-weight:700; font-size:.875rem; cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--pen); color:var(--pen-ink)}
+.seg button:focus-visible{outline-offset:-3px}
+
+.tabsrow{display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; justify-content:space-between; border-bottom:2px solid var(--ink)}
+.tabs{display:flex; gap:4px}
+.tabs a{display:block; padding:10px 18px; text-decoration:none; color:var(--muted); font-weight:700; border:1px solid transparent; border-bottom:0; border-radius:6px 6px 0 0; margin-bottom:-2px}
+.tabs a[aria-current="page"]{color:var(--ink); background:var(--surface); border-color:var(--ink); border-bottom:2px solid var(--surface)}
+.mode{display:inline-flex; align-items:center; gap:8px; font-size:.875rem; color:var(--muted); padding-bottom:6px}
+.mode i{width:9px; height:9px; border-radius:50%; background:var(--muted); flex:none}
+.mode[data-s="ok"] i{background:var(--good)}
+.mode[data-s="off"] i{background:var(--warn)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:6px}
+.pad{padding:16px}
+.card h2{font-size:1.25rem; font-weight:700}
+.fields{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:16px; margin-top:14px}
+.field{display:flex; flex-direction:column; gap:6px; min-width:0}
+.field>label,.field>.lab{font-size:.875rem; font-weight:700; color:var(--muted)}
+.field input[type=text],.field input[type=date],.field textarea,.field select{
+  width:100%; min-height:44px; padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:var(--surface);
+}
+.field textarea{resize:vertical; min-height:64px}
+
+.rs{display:inline-flex}
+.rs label{position:relative; display:block}
+.rs input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer}
+.rs span{display:grid; place-items:center; min-width:46px; min-height:44px; padding:0 10px; margin-left:-1px; border:1px solid var(--line); background:var(--surface); font:600 1rem var(--f-num); font-variant-numeric:tabular-nums}
+.rs label:first-child span{margin-left:0; border-radius:6px 0 0 6px}
+.rs label:last-child span{border-radius:0 6px 6px 0}
+.rs input:hover+span{background:var(--pen-soft)}
+.rs input:checked+span{background:var(--pen); color:var(--pen-ink); border-color:var(--pen); position:relative; z-index:1}
+.rs input:focus-visible+span{outline:2px solid var(--pen); outline-offset:2px; position:relative; z-index:2}
+
+.crit-head{display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; justify-content:space-between; padding:16px 16px 12px}
+.legend{margin:4px 0 0; color:var(--muted); font-size:.9375rem}
+ol.crits{list-style:none; margin:0; padding:0}
+.crit{display:grid; grid-template-columns:2rem minmax(0,1fr) auto; gap:8px 12px; align-items:center; padding:14px 16px; border-top:1px solid var(--line)}
+.crit .n{font:600 .9375rem var(--f-num); color:var(--muted); text-align:right}
+.crit .ct{margin:0}
+.crit.need{background:var(--pen-soft); outline:2px solid var(--red); outline-offset:-2px}
+@media (max-width:640px){
+  .crit{grid-template-columns:1.75rem minmax(0,1fr)}
+  .crit .rs{grid-column:1/-1; display:flex}
+  .crit .rs label{flex:1}
+}
+
+.btn{min-height:46px; padding:0 20px; border-radius:6px; border:1px solid var(--line); background:var(--surface); font-weight:700; cursor:pointer}
+.btn:hover{background:var(--pen-soft)}
+.btn.primary{background:var(--pen); color:var(--pen-ink); border-color:var(--pen)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.6; cursor:default}
+.btn.small{min-height:40px; padding:0 14px; font-size:.9375rem}
+.link{background:none; border:0; padding:6px 0; color:var(--pen); font-weight:700; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+.link.danger{color:var(--red)}
+
+.bar{position:sticky; bottom:0; z-index:5; display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; justify-content:space-between;
+  background:var(--surface); border:1px solid var(--line); border-top:2px solid var(--ink); border-radius:6px 6px 0 0;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px)); box-shadow:0 -8px 16px -12px var(--shadow)}
+.res{display:flex; align-items:center; gap:18px; flex:1 1 300px; min-width:0}
+.score{flex:none; font:700 1.75rem/1 var(--f-display); color:var(--red); border:2px solid var(--red); border-radius:50%/62%; padding:10px 18px; transform:rotate(-2deg); font-variant-numeric:tabular-nums; white-space:nowrap}
+.score small{font-size:1rem; font-weight:600}
+.rtext{flex:1; min-width:0}
+.rtext .pct{font:600 1rem var(--f-num)}
+.rtext .state{color:var(--muted)}
+.meter{height:8px; margin-top:6px; background:var(--line); border-radius:4px; overflow:hidden; --lv:var(--pen)}
+.meter i{display:block; height:100%; width:0; background:var(--lv); transition:width .25s}
+.meter[data-lv="High"]{--lv:var(--good)}
+.meter[data-lv="Base"]{--lv:var(--warn)}
+.meter[data-lv="Low"]{--lv:var(--bad)}
+.btns{display:flex; flex-wrap:wrap; gap:8px}
+@media (max-width:640px){.btns{width:100%} .btns .btn{flex:1}}
+
+.ed-row{padding:16px; border-top:1px solid var(--line)}
+.ed-row h3{font-size:1rem; margin-bottom:10px}
+.ed-lang{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:12px}
+.ed-foot{display:flex; flex-wrap:wrap; gap:8px; padding:16px; border-top:2px solid var(--ink); align-items:center}
+.note{margin:6px 0 0; color:var(--muted); font-size:.9375rem}
+
+.toolbar{display:flex; flex-wrap:wrap; gap:12px 16px; align-items:center; justify-content:space-between; padding:16px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border:1px solid var(--line); border-radius:999px; background:var(--surface); font-weight:700; cursor:pointer}
+.chip .cnt{font:600 .8125rem var(--f-num); color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--pen); border-color:var(--pen); color:var(--pen-ink)}
+.chip[aria-pressed="true"] .cnt{color:var(--pen-ink)}
+.stats{display:flex; flex-wrap:wrap; gap:4px 24px; padding:0 16px 14px; color:var(--muted); font-variant-numeric:tabular-nums}
+.entry{border-top:1px solid var(--line); padding:14px 16px}
+.erow{display:grid; grid-template-columns:minmax(0,1fr) 3.5rem 6.5rem 10rem; gap:8px 12px; align-items:center}
+.who{min-width:0}
+.who strong{display:block; overflow-wrap:anywhere}
+.who span{color:var(--muted); font-size:.9375rem; overflow-wrap:anywhere}
+.cls{font:600 1rem var(--f-num)}
+.when{font:500 .9375rem var(--f-num); color:var(--muted)}
+.eres .num{font:600 1rem var(--f-num)}
+.tag{display:inline-block; margin-left:6px; padding:0 8px; border:1px solid var(--line); border-radius:999px; font-size:.75rem; font-weight:400; color:var(--muted)}
+.tag.ok{color:var(--good); border-color:var(--good)}
+.tag.wait{color:var(--warn); border-color:var(--warn)}
+.eact{display:flex; flex-wrap:wrap; gap:4px 16px; margin-top:6px; align-items:center}
+.detail{margin-top:10px; padding:4px 0 0}
+.detail ol{list-style:none; margin:0; padding:0}
+.detail li{display:grid; grid-template-columns:1.75rem minmax(0,1fr) auto; gap:8px; padding:6px 0; border-top:1px dashed var(--line)}
+.detail li b{font:600 .9375rem var(--f-num)}
+.detail li .nn{font:500 .875rem var(--f-num); color:var(--muted); text-align:right}
+.empty{padding:28px 16px 32px; text-align:center; color:var(--muted)}
+.foot-note{padding:12px 16px 16px; border-top:1px solid var(--line); color:var(--muted); font-size:.9375rem; margin:0}
+@media (max-width:640px){
+  .erow{grid-template-columns:minmax(0,1fr) auto; grid-template-areas:"who res" "cls when"}
+  .who{grid-area:who} .eres{grid-area:res; text-align:right} .cls{grid-area:cls} .when{grid-area:when; text-align:right}
+}
+
+.toast{position:fixed; left:50%; top:calc(12px + env(safe-area-inset-top,0px)); transform:translate(-50%,-160%); max-width:min(92vw,540px);
+  background:var(--ink); color:var(--paper); padding:10px 16px; border-radius:6px; font-weight:700; z-index:20; transition:transform .2s; pointer-events:none}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.toast,.meter i{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow" data-i18n="eyebrow"></p>
+      <h1 data-i18n="title"></h1>
+      <p class="sub" data-i18n="sub"></p>
+    </div>
+    <div class="seg" role="group" aria-label="Language / Тіл / Язык" id="langs">
+      <button type="button" data-lang="ru" aria-label="Русский">RU</button>
+      <button type="button" data-lang="kk" aria-label="Қазақша">ҚАЗ</button>
+      <button type="button" data-lang="en" aria-label="English">EN</button>
+    </div>
+  </header>
+
+  <div class="tabsrow">
+    <nav class="tabs">
+      <a href="#sheet" id="tab-sheet" data-i18n="tabSheet"></a>
+      <a href="#journal" id="tab-journal" data-i18n="tabJournal"></a>
+    </nav>
+    <span class="mode" id="mode" data-s="off"><i></i><span id="mode-t"></span></span>
+  </div>
+
+  <main>
+    <section id="v-sheet" class="wrap" style="gap:16px">
+      <div class="card pad">
+        <h2 data-i18n="student"></h2>
+        <div class="fields">
+          <div class="field">
+            <span class="lab" id="lab-grade" data-i18n="grade"></span>
+            <div class="rs" role="radiogroup" aria-labelledby="lab-grade" id="grade-rs"></div>
+          </div>
+          <div class="field">
+            <span class="lab" id="lab-letter" data-i18n="letter"></span>
+            <div class="rs" role="radiogroup" aria-labelledby="lab-letter" id="letter-rs"></div>
+          </div>
+          <div class="field">
+            <label for="f-name" data-i18n="name"></label>
+            <input type="text" id="f-name" maxlength="80" autocomplete="off" data-i18n-ph="namePh">
+          </div>
+          <div class="field">
+            <label for="f-date" data-i18n="date"></label>
+            <input type="date" id="f-date">
+          </div>
+          <div class="field" style="grid-column:1/-1">
+            <label for="f-subject" data-i18n="subject"></label>
+            <input type="text" id="f-subject" maxlength="120" autocomplete="off" data-i18n-ph="subjectPh">
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="crit-view">
+        <div class="crit-head">
+          <div>
+            <h2 data-i18n="criteria"></h2>
+            <p class="legend" id="legend"></p>
+          </div>
+          <button type="button" class="btn small" id="btn-edit" hidden data-i18n="edit"></button>
+        </div>
+        <ol class="crits" id="crits"></ol>
+      </div>
+
+      <div class="card" id="crit-editor" hidden>
+        <div class="crit-head">
+          <div>
+            <h2 data-i18n="edTitle"></h2>
+            <p class="legend" data-i18n="edHint"></p>
+            <p class="note" data-i18n="edLocal"></p>
+          </div>
+          <div class="field" style="min-width:200px">
+            <label for="ed-scale" data-i18n="edScale"></label>
+            <select id="ed-scale">
+              <option value="1">0 – 1</option><option value="2">0 – 2</option><option value="3">0 – 3</option><option value="4">0 – 4</option><option value="5">0 – 5</option>
+            </select>
+          </div>
+        </div>
+        <div id="ed-items"></div>
+        <div class="ed-foot">
+          <button type="button" class="btn primary" id="ed-save" data-i18n="edSave"></button>
+          <button type="button" class="btn" id="ed-cancel" data-i18n="edCancel"></button>
+          <button type="button" class="link" id="ed-restore" data-i18n="edRestore"></button>
+        </div>
+      </div>
+
+      <div class="bar" id="bar">
+        <div class="res">
+          <div class="score" aria-live="polite"><span id="sc-total">0</span><small> / <span id="sc-max">10</span></small></div>
+          <div class="rtext">
+            <div><span class="pct" id="sc-pct">0%</span> · <span class="state" id="sc-state"></span></div>
+            <div class="meter" id="sc-meter"><i id="sc-fill"></i></div>
+          </div>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn" id="btn-reset" data-i18n="reset"></button>
+          <button type="button" class="btn primary" id="btn-save" data-i18n="save"></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="v-journal" hidden>
+      <div class="card">
+        <div class="toolbar">
+          <h2 data-i18n="jTitle"></h2>
+          <button type="button" class="btn small" id="btn-export" hidden data-i18n="export"></button>
+        </div>
+        <div class="toolbar" style="padding-top:0"><div class="chips" id="chips" role="group"></div></div>
+        <div class="stats"><span id="st-count"></span><span id="st-avg"></span></div>
+        <div id="entries"></div>
+        <p class="foot-note" id="del-note" hidden data-i18n="delNote"></p>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ===================================================================
+   НАСТРОЙКИ
+   SCRIPT_URL — адрес веб-приложения Google Apps Script (см. README.md).
+   Если оставить пустым, журнал хранится только на устройстве ученика,
+   а критерии можно менять кнопкой «Изменить критерии».
+   =================================================================== */
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBdrd1GlSJjXAT1pUjzTEXgeUXYokMHv-0SWx_f5qTxyZ0qdLKNULITmWMRjFe7nic/exec';
+
+var N=10, GRADES=[7,8,9], LETTERS=['А','Б'];
+
+/* Стандартные критерии (если подключена таблица, берутся из её листа «Критерии») */
+var DEF_ITEMS=[
+ {ru:'Я понимаю цель урока и тему, над которой работаю',kk:'Мен сабақтың мақсатын және тақырыбын түсінемін',en:'I understand the goal and the topic of the lesson'},
+ {ru:'Я могу объяснить новый материал своими словами',kk:'Жаңа материалды өз сөзіммен түсіндіре аламын',en:'I can explain the new material in my own words'},
+ {ru:'Я правильно использую термины, правила и формулы',kk:'Терминдерді, ережелерді және формулаларды дұрыс қолданамын',en:'I use terms, rules and formulas correctly'},
+ {ru:'Я выполнил(а) задания самостоятельно',kk:'Тапсырмаларды өз бетімше орындадым',en:'I completed the tasks on my own'},
+ {ru:'Я могу привести пример или применить знание в новой ситуации',kk:'Мысал келтіре аламын немесе білімді жаңа жағдайда қолдана аламын',en:'I can give an example or apply what I learned in a new situation'},
+ {ru:'Я проверил(а) свою работу и исправил(а) ошибки',kk:'Жұмысымды тексеріп, қателерімді түзеттім',en:'I checked my work and corrected my mistakes'},
+ {ru:'Я активно работал(а) в паре или группе',kk:'Жұпта немесе топта белсенді жұмыс істедім',en:'I worked actively in a pair or group'},
+ {ru:'Я задавал(а) вопросы, когда что-то было непонятно',kk:'Түсініксіз жерлер болғанда сұрақ қойдым',en:'I asked questions when something was unclear'},
+ {ru:'Я уложился(лась) во время и довёл(а) работу до конца',kk:'Уақытқа үлгеріп, жұмысты соңына дейін жеткіздім',en:'I managed my time and finished the work'},
+ {ru:'Я могу назвать, что получилось хорошо и что нужно улучшить',kk:'Нені жақсы орындағанымды және нені жақсарту керегін айта аламын',en:'I can say what went well and what I should improve'}
+];
+var DEFAULT={scale:1,items:DEF_ITEMS};
+
+var I18N={
+ru:{
+ eyebrow:'7–9 классы · параллели А и Б',title:'Лист самооценивания',
+ sub:'Оцени свою работу на уроке по каждому критерию. Отвечай честно: лист помогает увидеть, что уже получается и над чем стоит поработать.',
+ tabSheet:'Самооценка',tabJournal:'Журнал',student:'Ученик',grade:'Класс',letter:'Параллель',
+ name:'Фамилия и имя',namePh:'Фамилия Имя',subject:'Предмет и тема урока',subjectPh:'Например: алгебра, квадратные уравнения',date:'Дата',
+ criteria:'Критерии',legend:'0 — не получается, {max} — получается полностью',edit:'Изменить критерии',
+ remain:'осталось оценить: {n}',lvHigh:'высокий уровень',lvMid:'средний уровень',lvBase:'базовый уровень',lvLow:'нужна поддержка',
+ save:'Сохранить в журнал',reset:'Очистить',
+ needName:'Впишите фамилию и имя.',needScores:'Оцените все критерии. Осталось: {n}.',
+ savedSent:'Сохранено и отправлено в журнал учителя: {t} из {m} ({p}%).',
+ savedUnsent:'Сохранено на этом устройстве, но отправить в журнал не удалось. Повторите на вкладке «Журнал»: {t} из {m} ({p}%).',
+ savedLocal:'Сохранено на этом устройстве: {t} из {m} ({p}%).',
+ jTitle:'Журнал самооценивания',all:'Все классы',export:'Скачать CSV',
+ empty:'Пока нет записей. Заполните лист самооценивания и сохраните его в журнал.',emptyFilter:'В этом классе пока нет записей.',
+ count:'Записей: {n}',avg:'Средний результат: {p}%',show:'Показать оценки',hide:'Скрыть оценки',
+ del:'Удалить',delSure:'Удалить запись?',delYes:'Да, удалить',delNo:'Отмена',
+ delNote:'Удаление убирает запись только с этого устройства. В таблице учителя она остаётся.',
+ sentTag:'отправлено',unsentTag:'не отправлено',resend:'Отправить снова',resendOk:'Отправлено.',resendFail:'Не удалось отправить. Проверьте интернет.',
+ edTitle:'Редактор критериев',edHint:'Измените формулировки на трёх языках. Если перевод пустой, будет показан русский текст. Сумма баллов всегда приводится к 10.',
+ edLocal:'Изменения сохранятся только на этом устройстве.',
+ edScale:'Максимум баллов за критерий',edN:'Критерий {n}',edSave:'Сохранить критерии',edCancel:'Отмена',edRestore:'Вернуть стандартные',
+ edSaved:'Критерии сохранены.',
+ mLinked:'Журнал учителя подключён',mDevice:'Журнал хранится на этом устройстве',
+ csvDate:'Дата',csvClass:'Класс',csvName:'Фамилия и имя',csvSubject:'Предмет и тема',csvTotal:'Сумма (из 10)',csvMax:'Максимум',csvPct:'Процент'
+},
+kk:{
+ eyebrow:'7–9 сыныптар · А және Б параллельдері',title:'Өзін-өзі бағалау парағы',
+ sub:'Сабақтағы жұмысыңды әр өлшемшарт бойынша бағала. Шынайы жауап бер: бұл парақ нені игергеніңді және нені жетілдіру керегін көруге көмектеседі.',
+ tabSheet:'Өзін-өзі бағалау',tabJournal:'Журнал',student:'Оқушы',grade:'Сынып',letter:'Параллель',
+ name:'Тегі мен аты',namePh:'Тегі Аты',subject:'Пән және сабақ тақырыбы',subjectPh:'Мысалы: алгебра, квадрат теңдеулер',date:'Күні',
+ criteria:'Өлшемшарттар',legend:'0 — шықпайды, {max} — толық шығады',edit:'Өлшемшарттарды өзгерту',
+ remain:'бағалау керек: {n}',lvHigh:'жоғары деңгей',lvMid:'орта деңгей',lvBase:'базалық деңгей',lvLow:'қолдау қажет',
+ save:'Журналға сақтау',reset:'Тазарту',
+ needName:'Тегі мен атын жазыңыз.',needScores:'Барлық өлшемшартты бағалаңыз. Қалды: {n}.',
+ savedSent:'Сақталды және мұғалімнің журналына жіберілді: {t} / {m} ({p}%).',
+ savedUnsent:'Осы құрылғыда сақталды, бірақ журналға жіберу мүмкін болмады. «Журнал» бетінен қайта жіберіңіз: {t} / {m} ({p}%).',
+ savedLocal:'Осы құрылғыда сақталды: {t} / {m} ({p}%).',
+ jTitle:'Өзін-өзі бағалау журналы',all:'Барлық сыныптар',export:'CSV жүктеп алу',
+ empty:'Әзірге жазба жоқ. Өзін-өзі бағалау парағын толтырып, журналға сақтаңыз.',emptyFilter:'Бұл сыныпта әзірге жазба жоқ.',
+ count:'Жазба саны: {n}',avg:'Орташа нәтиже: {p}%',show:'Бағаларды көрсету',hide:'Бағаларды жасыру',
+ del:'Жою',delSure:'Жазбаны жою керек пе?',delYes:'Иә, жою',delNo:'Бас тарту',
+ delNote:'Жою жазбаны тек осы құрылғыдан өшіреді. Мұғалімнің кестесіндегі жазба қалады.',
+ sentTag:'жіберілді',unsentTag:'жіберілмеді',resend:'Қайта жіберу',resendOk:'Жіберілді.',resendFail:'Жіберу мүмкін болмады. Интернетті тексеріңіз.',
+ edTitle:'Өлшемшарттар редакторы',edHint:'Өлшемшарттарды үш тілде өзгертіңіз. Аударма бос болса, орысша мәтін көрсетіледі. Балл жиыны әрқашан 10-ға келтіріледі.',
+ edLocal:'Өзгерістер тек осы құрылғыда сақталады.',
+ edScale:'Әр өлшемшарттың ең жоғары балы',edN:'{n}-өлшемшарт',edSave:'Өлшемшарттарды сақтау',edCancel:'Бас тарту',edRestore:'Бастапқы нұсқаға қайтару',
+ edSaved:'Өлшемшарттар сақталды.',
+ mLinked:'Мұғалімнің журналы қосулы',mDevice:'Журнал осы құрылғыда сақталады',
+ csvDate:'Күні',csvClass:'Сынып',csvName:'Тегі мен аты',csvSubject:'Пән және тақырып',csvTotal:'Жиыны (10-нан)',csvMax:'Ең жоғары',csvPct:'Пайыз'
+},
+en:{
+ eyebrow:'Grades 7–9 · classes A and B',title:'Self-Assessment Sheet',
+ sub:'Rate your work in the lesson against each criterion. Be honest: the sheet helps you see what already works and what to practise next.',
+ tabSheet:'Self-assessment',tabJournal:'Journal',student:'Student',grade:'Grade',letter:'Class',
+ name:'Full name',namePh:'Last name, first name',subject:'Subject and lesson topic',subjectPh:'For example: algebra, quadratic equations',date:'Date',
+ criteria:'Criteria',legend:'0 — not yet, {max} — fully',edit:'Edit criteria',
+ remain:'left to rate: {n}',lvHigh:'high level',lvMid:'medium level',lvBase:'basic level',lvLow:'needs support',
+ save:'Save to journal',reset:'Clear',
+ needName:'Please enter your name.',needScores:'Rate every criterion. Left: {n}.',
+ savedSent:'Saved and sent to the teacher’s journal: {t} of {m} ({p}%).',
+ savedUnsent:'Saved on this device, but it could not be sent to the journal. Try again on the Journal tab: {t} of {m} ({p}%).',
+ savedLocal:'Saved on this device: {t} of {m} ({p}%).',
+ jTitle:'Self-assessment journal',all:'All classes',export:'Download CSV',
+ empty:'No entries yet. Fill in the self-assessment sheet and save it to the journal.',emptyFilter:'No entries for this class yet.',
+ count:'Entries: {n}',avg:'Average result: {p}%',show:'Show scores',hide:'Hide scores',
+ del:'Delete',delSure:'Delete this entry?',delYes:'Yes, delete',delNo:'Cancel',
+ delNote:'Deleting removes the entry from this device only. It stays in the teacher’s spreadsheet.',
+ sentTag:'sent',unsentTag:'not sent',resend:'Send again',resendOk:'Sent.',resendFail:'Could not send. Check your internet connection.',
+ edTitle:'Criteria editor',edHint:'Edit the wording in three languages. If a translation is empty, the Russian text is shown. The total is always scaled to 10 points.',
+ edLocal:'Changes are saved on this device only.',
+ edScale:'Maximum points per criterion',edN:'Criterion {n}',edSave:'Save criteria',edCancel:'Cancel',edRestore:'Restore defaults',
+ edSaved:'Criteria saved.',
+ mLinked:'Teacher’s journal connected',mDevice:'Journal is kept on this device',
+ csvDate:'Date',csvClass:'Class',csvName:'Full name',csvSubject:'Subject and topic',csvTotal:'Total (of 10)',csvMax:'Maximum',csvPct:'Percent'
+}};
+
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function h(tag,attrs){
+  var el=document.createElement(tag);
+  if(attrs){for(var k in attrs){var v=attrs[k];if(v===false||v==null)continue;
+    if(k==='class')el.className=v;else if(k==='text')el.textContent=v;
+    else if(k.slice(0,2)==='on')el.addEventListener(k.slice(2),v);
+    else el.setAttribute(k,v===true?'':v);}}
+  for(var i=2;i<arguments.length;i++){var kid=arguments[i];if(kid==null||kid===false)continue;
+    if(Array.isArray(kid)){kid.forEach(function(x){el.append(x.nodeType?x:document.createTextNode(String(x)))});}
+    else el.append(kid.nodeType?kid:document.createTextNode(String(kid)));}
+  return el;
+}
+var LS={
+  get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function pad2(n){return (n<10?'0':'')+n}
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function fmtDate(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?m[3]+'.'+m[2]+'.'+m[1]:(s||'')}
+function uid8(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+
+var lang=LS.get('sa.lang','ru'); if(!I18N[lang])lang='ru';
+function normalize(c){
+  if(!c||typeof c!=='object'||!Array.isArray(c.items))return null;
+  var scale=Number(c.scale); if(!(scale>=1&&scale<=5))scale=1; scale=Math.round(scale);
+  var items=[];
+  for(var i=0;i<N;i++){var it=c.items[i]||{},d=DEF_ITEMS[i];
+    items.push({ru:String(it.ru!=null?it.ru:d.ru),kk:String(it.kk!=null?it.kk:d.kk),en:String(it.en!=null?it.en:d.en)});}
+  return {scale:scale,items:items};
+}
+/* критерии: кэш таблицы учителя > правки на этом устройстве > стандартные */
+var criteria=normalize(LS.get(SCRIPT_URL?'sa.criteria.remote':'sa.criteria',null))||clone(DEFAULT);
+var form={grade:7,letter:LETTERS[0],date:todayStr(),scores:[]};
+for(var q=0;q<N;q++)form.scores.push(null);
+var localEntries=LS.get('sa.journal',[]); if(!Array.isArray(localEntries))localEntries=[];
+var filter='', openIds={}, confirmId=null, confirmTimer=null, busy={};
+var editing=false, draft=null;
+
+function t(key,vars){
+  var s=(I18N[lang][key]!=null?I18N[lang][key]:I18N.ru[key])||key;
+  if(vars)for(var k in vars)s=s.split('{'+k+'}').join(vars[k]);
+  return s;
+}
+function critText(item){return item[lang]||item.ru||''}
+function persist(){LS.set('sa.journal',localEntries)}
+
+var toastTimer=null;
+function toast(msg){var el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show')},4200)}
+
+function applyLang(){
+  document.documentElement.lang=lang;
+  $$('[data-i18n]').forEach(function(el){el.textContent=t(el.getAttribute('data-i18n'))});
+  $$('[data-i18n-ph]').forEach(function(el){el.setAttribute('placeholder',t(el.getAttribute('data-i18n-ph')))});
+  $$('#langs button').forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-lang')===lang))});
+  renderClassPickers();renderCriteria();updateSummary();renderJournal();renderMode();
+  $('#btn-edit').hidden=!!SCRIPT_URL||editing;
+  $('#del-note').hidden=!SCRIPT_URL;
+  if(editing)renderEditor();
+}
+
+function radioGroup(name,values,current,onPick){
+  var box=document.createDocumentFragment();
+  values.forEach(function(v){
+    var inp=h('input',{type:'radio',name:name,value:String(v)});
+    if(String(v)===String(current))inp.checked=true;
+    inp.addEventListener('change',function(){onPick(v)});
+    box.append(h('label',null,inp,h('span',{text:String(v)})));
+  });
+  return box;
+}
+function renderClassPickers(){
+  var g=$('#grade-rs'),l=$('#letter-rs');g.textContent='';l.textContent='';
+  g.append(radioGroup('grade',GRADES,form.grade,function(v){form.grade=v}));
+  l.append(radioGroup('letter',LETTERS,form.letter,function(v){form.letter=v}));
+}
+
+function renderCriteria(){
+  var ol=$('#crits');ol.textContent='';
+  criteria.items.forEach(function(item,i){
+    var rs=h('div',{class:'rs',role:'radiogroup','aria-labelledby':'ct'+i});
+    for(var v=0;v<=criteria.scale;v++){
+      var inp=h('input',{type:'radio',name:'c'+i,value:String(v),'data-i':String(i)});
+      if(form.scores[i]===v)inp.checked=true;
+      rs.append(h('label',null,inp,h('span',{text:String(v)})));
+    }
+    ol.append(h('li',{class:'crit','data-row':String(i)},
+      h('span',{class:'n',text:String(i+1)}),
+      h('p',{class:'ct',id:'ct'+i,text:critText(item)}),rs));
+  });
+  $('#legend').textContent=t('legend',{max:criteria.scale});
+}
+$('#crits').addEventListener('change',function(e){
+  var el=e.target;if(!el||el.type!=='radio')return;
+  var i=Number(el.getAttribute('data-i'));form.scores[i]=Number(el.value);
+  var row=el.closest('.crit');if(row)row.classList.remove('need');
+  updateSummary();
+});
+
+function levelOf(p){return p>=85?'High':p>=65?'Mid':p>=40?'Base':'Low'}
+function calc(){
+  var max=criteria.scale,done=0,raw=0;
+  form.scores.forEach(function(s){if(s!==null){done++;raw+=s}});
+  return {max:max,done:done,raw:raw,total10:Math.round(raw/(max*N)*100)/10,pct:Math.round(raw/(max*N)*100)};
+}
+function updateSummary(){
+  var c=calc(),complete=c.done===N;
+  $('#sc-total').textContent=c.total10;$('#sc-max').textContent=10;
+  $('#sc-pct').textContent=c.pct+'%';
+  $('#sc-state').textContent=complete?t('lv'+levelOf(c.pct)):t('remain',{n:N-c.done});
+  $('#sc-fill').style.width=c.pct+'%';
+  $('#sc-meter').setAttribute('data-lv',complete?levelOf(c.pct):'');
+}
+
+/* ---------- отправка в таблицу учителя ---------- */
+function sendEntry(e){
+  if(!SCRIPT_URL||busy[e.id])return Promise.reject(new Error('unavailable'));
+  busy[e.id]=true;
+  var body=JSON.stringify({id:e.id,date:e.date,grade:e.grade,letter:e.letter,name:e.name,subject:e.subject,scores:e.scores,max:e.max});
+  return fetch(SCRIPT_URL,{method:'POST',body:body})
+    .then(function(r){return r.json()})
+    .then(function(j){
+      delete busy[e.id];
+      if(!j||!j.ok)throw new Error('server');
+      e.sent=true;persist();renderJournal();
+    },function(err){delete busy[e.id];throw err});
+}
+function retryUnsent(){
+  if(!SCRIPT_URL)return;
+  var chain=Promise.resolve();
+  localEntries.filter(function(e){return e.sent===false}).forEach(function(e){
+    chain=chain.then(function(){return sendEntry(e)}).catch(function(){});
+  });
+}
+function loadRemoteCriteria(){
+  if(!SCRIPT_URL)return;
+  fetch(SCRIPT_URL).then(function(r){return r.json()}).then(function(j){
+    var c=j&&j.ok&&normalize(j.criteria);if(!c)return;
+    criteria=c;LS.set('sa.criteria.remote',c);
+    form.scores=form.scores.map(function(s){return s!==null&&s>c.scale?null:s});
+    renderCriteria();updateSummary();renderJournal();
+  }).catch(function(){});
+}
+
+/* ---------- сохранение ---------- */
+function saveEntry(){
+  var name=$('#f-name').value.trim().slice(0,80);
+  if(!name){toast(t('needName'));$('#f-name').focus();return}
+  var c=calc();
+  if(c.done<N){
+    var first=form.scores.findIndex(function(s){return s===null});
+    $$('.crit').forEach(function(r,i){if(form.scores[i]===null)r.classList.add('need')});
+    var row=$('[data-row="'+first+'"]');if(row)row.scrollIntoView({block:'center',behavior:'smooth'});
+    toast(t('needScores',{n:N-c.done}));return;
+  }
+  var entry={id:uid8(),ts:new Date().toISOString(),date:$('#f-date').value||todayStr(),grade:form.grade,letter:form.letter,
+    name:name,subject:$('#f-subject').value.trim().slice(0,120),scores:form.scores.slice(),max:c.max,total:c.total10,pct:c.pct,
+    sent:SCRIPT_URL?false:null};
+  localEntries.unshift(entry);persist();
+  var vars={t:c.total10,m:10,p:c.pct};
+  form.scores=form.scores.map(function(){return null});$('#f-name').value='';
+  renderCriteria();updateSummary();renderJournal();
+  if(!SCRIPT_URL){toast(t('savedLocal',vars));return}
+  sendEntry(entry).then(function(){toast(t('savedSent',vars))},function(){toast(t('savedUnsent',vars))});
+}
+$('#btn-save').addEventListener('click',saveEntry);
+$('#btn-reset').addEventListener('click',function(){
+  form.scores=form.scores.map(function(){return null});$('#f-name').value='';
+  renderCriteria();updateSummary();
+});
+$('#f-date').value=form.date;
+$('#f-date').addEventListener('change',function(e){form.date=e.target.value||todayStr()});
+
+/* ---------- журнал ---------- */
+function ck(e){return String(e.grade)+e.letter}
+function s10(e){var m=e.max||criteria.scale,sum=0;(e.scores||[]).forEach(function(s){sum+=s||0});return Math.round(sum/(N*m)*100)/10}
+function sorted(){
+  return localEntries.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'')||(b.ts||'').localeCompare(a.ts||'')});
+}
+function filtered(){return sorted().filter(function(e){return !filter||ck(e)===filter})}
+function renderJournal(){
+  var all=sorted(),counts={};all.forEach(function(e){var k=ck(e);counts[k]=(counts[k]||0)+1});
+  var chips=$('#chips');chips.textContent='';
+  [''].concat(GRADES.reduce(function(a,g){return a.concat(LETTERS.map(function(l){return g+l}))},[])).forEach(function(k){
+    var n=k===''?all.length:(counts[k]||0);
+    chips.append(h('button',{type:'button',class:'chip','aria-pressed':String(filter===k),onclick:function(){filter=k;renderJournal()}},
+      k===''?t('all'):k,h('span',{class:'cnt',text:String(n)})));
+  });
+  var list=filtered();
+  var avg=list.length?Math.round(list.reduce(function(s,e){return s+(e.pct||0)},0)/list.length):0;
+  $('#st-count').textContent=t('count',{n:list.length});
+  $('#st-avg').textContent=list.length?t('avg',{p:avg}):'';
+  $('#btn-export').hidden=!list.length;
+  var box=$('#entries');box.textContent='';
+  if(!list.length){box.append(h('div',{class:'empty',text:t(all.length?'emptyFilter':'empty')}));return}
+  list.forEach(function(e){
+    var open=!!openIds[e.id],lv=levelOf(e.pct||0),detail=null;
+    if(open){
+      detail=h('div',{class:'detail'},h('ol',null,criteria.items.map(function(item,i){
+        var s=e.scores&&e.scores[i];
+        return h('li',null,h('span',{class:'nn',text:String(i+1)}),h('span',{text:critText(item)}),h('b',{text:(s==null?'–':s)+' / '+(e.max||criteria.scale)}));
+      })));
+    }
+    var tag=null,resend=null;
+    if(e.sent===true)tag=h('span',{class:'tag ok',text:t('sentTag')});
+    else if(e.sent===false){
+      tag=h('span',{class:'tag wait',text:t('unsentTag')});
+      resend=h('button',{type:'button',class:'link',onclick:function(){
+        sendEntry(e).then(function(){toast(t('resendOk'))},function(){toast(t('resendFail'))});
+      }},t('resend'));
+    }
+    var del=confirmId===e.id
+      ? h('span',null,
+          h('button',{type:'button',class:'link danger',onclick:function(){doDelete(e)}},t('delYes')),' ',
+          h('button',{type:'button',class:'link',onclick:function(){confirmId=null;renderJournal()}},t('delNo')))
+      : h('button',{type:'button',class:'link danger',onclick:function(){askDelete(e)}},t('del'));
+    box.append(h('article',{class:'entry'},
+      h('div',{class:'erow'},
+        h('div',{class:'who'},h('strong',null,e.name||'—',tag),h('span',{text:e.subject||''})),
+        h('div',{class:'cls',text:ck(e)}),
+        h('div',{class:'when',text:fmtDate(e.date)}),
+        h('div',{class:'eres'},h('span',{class:'num',text:s10(e)+' / 10 · '+(e.pct||0)+'%'}),
+          h('div',{class:'meter','data-lv':lv},h('i',{style:'width:'+(e.pct||0)+'%'})))),
+      h('div',{class:'eact'},
+        h('button',{type:'button',class:'link','aria-expanded':String(open),onclick:function(){openIds[e.id]=!openIds[e.id];renderJournal()}},t(open?'hide':'show')),
+        resend,del),
+      detail));
+  });
+}
+function askDelete(e){
+  confirmId=e.id;renderJournal();clearTimeout(confirmTimer);
+  confirmTimer=setTimeout(function(){confirmId=null;renderJournal()},6000);
+}
+function doDelete(e){
+  confirmId=null;clearTimeout(confirmTimer);
+  localEntries=localEntries.filter(function(x){return x.id!==e.id});persist();renderJournal();
+}
+
+/* ---------- CSV ---------- */
+function csvCell(v,guard){
+  var s=String(v==null?'':v);
+  if(guard&&/^[=+\-@\t\r]/.test(s))s="'"+s;
+  return /[";\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function exportCsv(){
+  var list=filtered();if(!list.length)return;
+  var head=[t('csvDate'),t('csvClass'),t('csvName'),t('csvSubject')];
+  for(var i=1;i<=N;i++)head.push('№'+i);
+  head.push(t('csvTotal'),t('csvMax'),t('csvPct'));
+  var lines=[head.map(function(x){return csvCell(x)}).join(';')];
+  list.slice().reverse().forEach(function(e){
+    var row=[fmtDate(e.date),ck(e),e.name,e.subject].map(function(x,j){return csvCell(x,j>=2)});
+    for(var i=0;i<N;i++)row.push(csvCell(e.scores&&e.scores[i]!=null?e.scores[i]:''));
+    row.push(csvCell(s10(e)),csvCell(10),csvCell(e.pct));
+    lines.push(row.join(';'));
+  });
+  var blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='journal-'+(filter||'all')+'-'+todayStr()+'.csv';
+  document.body.append(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+$('#btn-export').addEventListener('click',exportCsv);
+
+/* ---------- редактор критериев (только если таблица не подключена) ---------- */
+function openEditor(){
+  draft=clone(criteria);editing=true;
+  $('#crit-view').hidden=true;$('#bar').hidden=true;$('#crit-editor').hidden=false;$('#btn-edit').hidden=true;
+  $('#ed-scale').value=String(draft.scale);
+  renderEditor();$('#crit-editor').scrollIntoView({block:'start'});
+}
+function closeEditor(){
+  editing=false;draft=null;
+  $('#crit-editor').hidden=true;$('#crit-view').hidden=false;$('#bar').hidden=false;$('#btn-edit').hidden=!!SCRIPT_URL;
+  renderCriteria();updateSummary();
+}
+function renderEditor(){
+  if(!draft)return;
+  var box=$('#ed-items');box.textContent='';
+  var labels={ru:'Русский',kk:'Қазақша',en:'English'};
+  draft.items.forEach(function(it,i){
+    var grid=h('div',{class:'ed-lang'});
+    ['ru','kk','en'].forEach(function(l){
+      var id='ed-'+i+'-'+l;
+      var ta=h('textarea',{id:id,rows:'2',maxlength:'240'});ta.value=it[l];
+      ta.addEventListener('input',function(){draft.items[i][l]=ta.value});
+      grid.append(h('div',{class:'field'},h('label',{for:id,text:labels[l]}),ta));
+    });
+    box.append(h('div',{class:'ed-row'},h('h3',{text:t('edN',{n:i+1})}),grid));
+  });
+}
+$('#btn-edit').addEventListener('click',openEditor);
+$('#ed-cancel').addEventListener('click',closeEditor);
+$('#ed-restore').addEventListener('click',function(){draft=clone(DEFAULT);$('#ed-scale').value=String(draft.scale);renderEditor()});
+$('#ed-scale').addEventListener('change',function(e){if(draft)draft.scale=Number(e.target.value)});
+$('#ed-save').addEventListener('click',function(){
+  var c=normalize(draft);if(!c)return;
+  criteria=c;LS.set('sa.criteria',c);
+  form.scores=form.scores.map(function(s){return s!==null&&s>c.scale?null:s});
+  closeEditor();renderJournal();toast(t('edSaved'));
+});
+
+function renderMode(){
+  $('#mode').setAttribute('data-s',SCRIPT_URL?'ok':'off');
+  $('#mode-t').textContent=t(SCRIPT_URL?'mLinked':'mDevice');
+}
+
+function route(){
+  var v=location.hash==='#journal'?'journal':'sheet';
+  $('#v-sheet').hidden=v!=='sheet';$('#v-journal').hidden=v!=='journal';
+  $('#tab-sheet').setAttribute('aria-current',v==='sheet'?'page':'false');
+  $('#tab-journal').setAttribute('aria-current',v==='journal'?'page':'false');
+}
+window.addEventListener('hashchange',route);
+$('#langs').addEventListener('click',function(e){
+  var b=e.target.closest('button[data-lang]');if(!b)return;
+  lang=b.getAttribute('data-lang');LS.set('sa.lang',lang);applyLang();
+});
+
+route();applyLang();loadRemoteCriteria();retryUnsent();
+})();
+</script>
+</body>
+</html>
