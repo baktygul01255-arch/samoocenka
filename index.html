@@ -91,6 +91,8 @@ ol.crits{list-style:none; margin:0; padding:0}
 .crit{display:grid; grid-template-columns:2rem minmax(0,1fr) auto; gap:8px 12px; align-items:center; padding:14px 16px; border-top:1px solid var(--line)}
 .crit .n{font:600 .9375rem var(--f-num); color:var(--muted); text-align:right}
 .crit .ct{margin:0}
+.crit .ct::first-letter{text-transform:uppercase}
+.grp{list-style:none; padding:12px 16px 10px; border-top:1px solid var(--line); background:var(--pen-soft); font:700 .9375rem/1.35 var(--f-display)}
 .crit.need{background:var(--pen-soft); outline:2px solid var(--red); outline-offset:-2px}
 @media (max-width:640px){
   .crit{grid-template-columns:1.75rem minmax(0,1fr)}
@@ -175,10 +177,10 @@ ol.crits{list-style:none; margin:0; padding:0}
       <h1 data-i18n="title"></h1>
       <p class="sub" data-i18n="sub"></p>
     </div>
-    <div class="seg" role="group" aria-label="Language / Тіл / Язык" id="langs">
+    <div class="seg" role="group" aria-label="Тіл / Язык" id="langs">
       <button type="button" data-lang="ru" aria-label="Русский">RU</button>
       <button type="button" data-lang="kk" aria-label="Қазақша">ҚАЗ</button>
-      <button type="button" data-lang="en" aria-label="English">EN</button>
+      
     </div>
   </header>
 
@@ -312,6 +314,100 @@ var DEF_ITEMS=[
 ];
 var DEFAULT={scale:1,topic:{ru:'',kk:'',en:''},items:DEF_ITEMS};
 
+/* ---------- Критерии классов (вшиты в страницу) ---------- */
+var C8A={scale:1,
+ title:{kk:'Табыс критерийлері және дескрипторлар',ru:'Критерии успеха и дескрипторы',en:'Success criteria and descriptors'},
+ note:{kk:'Орындалған дескрипторларды белгілеңіз: әрқайсысы — 1 балл, барлығы 10.',
+       ru:'Отметьте выполненные дескрипторы: каждый — 1 балл, всего 10.',
+       en:'Mark the descriptors you have achieved: 1 point each, 10 in total.'},
+ topic:{
+  kk:'Термодинамиканың бірінші заңы. Газдың және будың жұмысы. Жылу процестерінің қайтымсыздығы. Термодинамиканың екінші заңы',
+  ru:'Первый закон термодинамики. Работа газа и пара. Необратимость тепловых процессов. Второй закон термодинамики',
+  en:'The first law of thermodynamics. Work of gas and steam. Irreversibility of thermal processes. The second law of thermodynamics'},
+ groups:[
+  {from:0,kk:'Түсіндіреді және тұжырымдайды (тақырыпты түсіну)',ru:'Объясняет и формулирует (понимание темы)',en:'Explains and states (understanding of the topic)'},
+  {from:3,kk:'Білімін есеп шығаруда қолданады',ru:'Применяет знания при решении задач',en:'Applies knowledge to solve problems'},
+  {from:7,kk:'Топта жұмыс істейді және қорытынды жасайды',ru:'Работает в группе и делает вывод',en:'Works in a group and draws a conclusion'}
+ ],
+ items:[
+  {kk:'термодинамиканың бірінші заңын түсіндіріп, Q = ΔU + A қолданады',
+   ru:'объясняет первый закон термодинамики и применяет Q = ΔU + A',
+   en:'explains the first law of thermodynamics and applies Q = ΔU + A'},
+  {kk:'газдың ұлғаю және сығылу кезіндегі жұмысын сипаттайды',
+   ru:'описывает работу газа при расширении и сжатии',
+   en:'describes the work done by a gas during expansion and compression'},
+  {kk:'тұжырымдайды: термодинамиканың бірінші заңы: Q = ΔU + A – газға берілген жылу ішкі энергияның өзгеруіне және газдың жұмысына жұмсалады',
+   ru:'формулирует: первый закон термодинамики: Q = ΔU + A – переданная газу теплота идёт на изменение внутренней энергии и на работу газа',
+   en:'states the first law of thermodynamics: Q = ΔU + A – the heat given to a gas goes into the change of its internal energy and the work done by the gas'},
+  {kk:'1-есеп: үлгі бойынша орындайды, дұрыс жауап алады (ΔU = Q − A = 500 − 200 = 300 Дж)',
+   ru:'задача 1: выполняет по образцу, получает верный ответ (ΔU = Q − A = 500 − 200 = 300 Дж)',
+   en:'problem 1: solves it following the model, gets the correct answer (ΔU = Q − A = 500 − 200 = 300 J)'},
+  {kk:'2-есеп: дұрыс шешу тәсілін (формуланы) таңдайды, қажет болса бірліктерді СИ-ге ауыстырады',
+   ru:'задача 2: выбирает верный способ решения (формулу), при необходимости переводит единицы в СИ',
+   en:'problem 2: chooses the correct method (formula), converts units to SI if needed'},
+  {kk:'2-есеп: дұрыс жауап алады (150 Дж-ға артты)',
+   ru:'задача 2: получает верный ответ (Увеличилась на 150 Дж)',
+   en:'problem 2: gets the correct answer (it increased by 150 J)'},
+  {kk:'3-есеп: өздігінен шешеді, дұрыс жауап алады (Термодинамиканың екінші заңы: жылу…)',
+   ru:'задача 3: решает самостоятельно, получает верный ответ (Второй закон термодинамики: теплота…)',
+   en:'problem 3: solves it independently, gets the correct answer (The second law of thermodynamics: heat…)'},
+  {kk:'топта өз рөлін орындайды',
+   ru:'выполняет свою роль в группе',
+   en:'performs their role in the group'},
+  {kk:'топтың нәтижесін тапсырма парағына тіркейді',
+   ru:'фиксирует результат группы в листе задания',
+   en:'records the group result on the task sheet'},
+  {kk:'қорытынды жасайды: ұлғайғанда газ жұмыс істейді, сығылғанда газға жұмыс істеледі, оның ішкі энергиясы артады',
+   ru:'делает вывод: при расширении газ совершает работу, при сжатии работу совершают над газом, его внутренняя энергия растёт',
+   en:'draws a conclusion: when a gas expands it does work, when it is compressed work is done on it, and its internal energy increases'}
+ ]};
+var C7A={scale:1,
+ title:{kk:'Критерийлер мен дескрипторлар',ru:'Критерии и дескрипторы',en:'Criteria and descriptors'},
+ note:C8A.note,
+ topic:{
+  kk:'Масса және денелердің массасын өлшеу. Дұрыс және дұрыс емес пішінді денелердің көлемін өлшеу',
+  ru:'Масса и измерение массы тел. Измерение объёма тел правильной и неправильной формы',
+  en:'Mass and measuring the mass of bodies. Measuring the volume of regularly and irregularly shaped bodies'},
+ groups:[
+  {from:0,kk:'Түсіндіреді және тұжырымдайды (тақырыпты түсіну)',ru:'Объясняет и формулирует (понимание темы)',en:'Explains and states (understanding of the topic)'},
+  {from:3,kk:'Есеп шығаруда білімін қолданады',ru:'Применяет знания при решении задач',en:'Applies knowledge to solve problems'},
+  {from:7,kk:'Топта жұмыс істеп, қорытынды жасайды',ru:'Работает в группе и делает вывод',en:'Works in a group and draws a conclusion'}
+ ],
+ items:[
+  {kk:'масса мен көлемнің СИ бірліктерін атайды',
+   ru:'называет единицы массы и объёма в СИ',
+   en:'names the SI units of mass and volume'},
+  {kk:'массаны таразыда, көлемді мензуркамен өлшейді',
+   ru:'измеряет массу на весах и объём мензуркой',
+   en:'measures mass with a balance and volume with a measuring cylinder'},
+  {kk:'өлшем бірліктерін СИ-ге аударады',
+   ru:'переводит единицы измерения в СИ',
+   en:'converts units of measurement to SI'},
+  {kk:'1-тапсырма: үлгі бойынша орындайды, дұрыс жауап алады (125 г = 0,125 кг)',
+   ru:'задание 1: выполняет по образцу, получает верный ответ (125 г = 0,125 кг)',
+   en:'task 1: solves it following the model, gets the correct answer (125 g = 0.125 kg)'},
+  {kk:'2-тапсырма: шешудің дұрыс жолын (формуланы) таңдайды, қажет болса бірліктерді ауыстырады',
+   ru:'задание 2: выбирает верный способ решения (формулу), при необходимости переводит единицы',
+   en:'task 2: chooses the correct method (formula), converts units if needed'},
+  {kk:'2-тапсырма: дұрыс жауап алады (40 см³ = 4·10⁻⁵ м³)',
+   ru:'задание 2: получает верный ответ (40 см³ = 4·10⁻⁵ м³)',
+   en:'task 2: gets the correct answer (40 cm³ = 4·10⁻⁵ m³)'},
+  {kk:'3-тапсырма: шешудің дұрыс жолын таңдап, дұрыс жауап алады ((45 ± 3) см³)',
+   ru:'задание 3: выбирает верный способ решения и получает верный ответ ((45 ± 3) см³)',
+   en:'task 3: chooses the correct method and gets the correct answer ((45 ± 3) cm³)'},
+  {kk:'топтағы өз рөлін орындайды',
+   ru:'выполняет свою роль в группе',
+   en:'performs their role in the group'},
+  {kk:'топ нәтижесін тапсырма парағына тіркейді',
+   ru:'фиксирует результат группы в листе задания',
+   en:'records the group result on the task sheet'},
+  {kk:'қорытынды жасайды: дұрыс емес пішінді дененің көлемі ығыстырылған сұйықтың көлеміне тең',
+   ru:'делает вывод: объём тела неправильной формы равен объёму вытесненной жидкости',
+   en:'draws a conclusion: the volume of an irregularly shaped body equals the volume of the displaced liquid'}
+ ]};
+var PLAN={'7А':C7A,'7Б':C7A,'8А':C8A}; /* остальные классы пока со стандартными критериями */
+
+
 var I18N={
 ru:{
  eyebrow:'7–9 классы · параллели А и Б',title:'Лист самооценивания',
@@ -412,7 +508,7 @@ function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth(
 function fmtDate(s){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?m[3]+'.'+m[2]+'.'+m[1]:(s||'')}
 function uid8(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
 
-var lang=LS.get('sa.lang','ru'); if(!I18N[lang])lang='ru';
+var lang=LS.get('sa.lang','ru'); if(lang!=='ru'&&lang!=='kk')lang='ru';
 var CLASSES=[];GRADES.forEach(function(g){LETTERS.forEach(function(l){CLASSES.push(g+l)})});
 function normalize(c){
   if(!c||typeof c!=='object'||!Array.isArray(c.items))return null;
@@ -421,12 +517,13 @@ function normalize(c){
   var items=[];
   for(var i=0;i<N;i++){var it=c.items[i]||{},d=DEF_ITEMS[i];
     items.push({ru:String(it.ru!=null?it.ru:d.ru),kk:String(it.kk!=null?it.kk:d.kk),en:String(it.en!=null?it.en:d.en)});}
-  return {scale:scale,topic:{ru:String(tp.ru||''),kk:String(tp.kk||''),en:String(tp.en||'')},items:items};
+  return {scale:scale,topic:{ru:String(tp.ru||''),kk:String(tp.kk||''),en:String(tp.en||'')},items:items,
+    title:c.title||null,note:c.note||null,groups:Array.isArray(c.groups)?c.groups:null};
 }
 /* критерии и тема у каждого класса свои: таблица учителя (кэш) или правки на этом устройстве */
 var STORE=SCRIPT_URL?'sa.classes.remote':'sa.classes.local';
 var crit=LS.get(STORE,{}); if(!crit||typeof crit!=='object')crit={};
-function cfg(key){return normalize(crit[key])||normalize(DEFAULT)}
+function cfg(key){return normalize(crit[key])||normalize(PLAN[key])||normalize(DEFAULT)}
 function curKey(){return form.grade+form.letter}
 function cur(){return cfg(curKey())}
 var lastAuto='';
@@ -486,8 +583,10 @@ function renderClassPickers(){
 function renderCriteria(){
   var ol=$('#crits');ol.textContent='';
   var cc=cur();
-  $('#crit-title').textContent=t('criteria')+' · '+curKey();
+  $('#crit-title').textContent=((cc.title&&(cc.title[lang]||cc.title.ru))||t('criteria'))+' · '+curKey();
   cc.items.forEach(function(item,i){
+    var gr=cc.groups&&cc.groups.filter(function(x){return x.from===i})[0];
+    if(gr&&(gr[lang]||gr.ru))ol.append(h('li',{class:'grp'},gr[lang]||gr.ru));
     var rs=h('div',{class:'rs',role:'radiogroup','aria-labelledby':'ct'+i});
     for(var v=0;v<=cc.scale;v++){
       var inp=h('input',{type:'radio',name:'c'+i,value:String(v),'data-i':String(i)});
@@ -498,7 +597,7 @@ function renderCriteria(){
       h('span',{class:'n',text:String(i+1)}),
       h('p',{class:'ct',id:'ct'+i,text:critText(item)}),rs));
   });
-  $('#legend').textContent=t('legend',{max:cc.scale});
+  $('#legend').textContent=(cc.note&&(cc.note[lang]||cc.note.ru))||t('legend',{max:cc.scale});
 }
 $('#crits').addEventListener('change',function(e){
   var el=e.target;if(!el||el.type!=='radio')return;
